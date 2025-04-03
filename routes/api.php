@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Api\AuthController;
+use App\Http\Controllers\Api\ChatController;
 use App\Http\Controllers\Api\ExtensionServiceController;
 use App\Http\Controllers\Api\PesapalController;
 use App\Http\Controllers\Api\ProfileController;
@@ -35,5 +36,9 @@ Route::prefix('v1')->group(function () {
 
         Route::post('/pesapal/create-payment', [PesapalController::class, 'createPayment']);
         Route::post('/pesapal/callback', [PesapalController::class, 'handleIPN']);
+
+        Route::post('/chats', [ChatController::class, 'createChat']);
+        Route::get('/chats/{chatId}/messages', [ChatController::class, 'getMessages']);
+        Route::post('/chats/{chatId}/messages', [ChatController::class, 'sendMessage']);
     });
 });
