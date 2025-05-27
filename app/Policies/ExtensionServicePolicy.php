@@ -13,8 +13,7 @@ class ExtensionServicePolicy
      */
     public function viewAny(User $user): bool
     {
-        return $user->hasRole(['root', 'rdmin'])
-            && $user->hasPermissionTo('view_extension::service');
+        return $user->hasPermissionTo('view_extension::service');
     }
 
     /**
@@ -22,8 +21,7 @@ class ExtensionServicePolicy
      */
     public function view(User $user, ExtensionService $extensionService): bool
     {
-        return $user->hasRole(['root', 'admin'])
-            && $user->hasPermissionTo('view_any_extension::service');
+        return  $user->hasPermissionTo('view_any_extension::service');
     }
 
     /**
@@ -31,8 +29,7 @@ class ExtensionServicePolicy
      */
     public function create(User $user): bool
     {
-        return $user->hasRole(['root', 'admin'])
-            && $user->hasPermissionTo('create_extension::service');
+        return $user->hasPermissionTo('create_extension::service');
     }
 
     /**
@@ -40,8 +37,7 @@ class ExtensionServicePolicy
      */
     public function update(User $user, ExtensionService $extensionService): bool
     {
-        return $user->hasRole(['root', 'admin'])
-            && $user->hasPermissionTo('update_extension::service');
+        return $user->hasPermissionTo('update_extension::service');
     }
 
     /**
@@ -49,15 +45,13 @@ class ExtensionServicePolicy
      */
     public function delete(User $user, ExtensionService $extensionService): bool
     {
-        return $user->hasRole(['root', 'admin'])
-            && $user->hasPermissionTo('delete_extension::service');
+        return $user->hasPermissionTo('delete_extension::service');
     }
 
 
     public function deleteAny(User $user): bool
     {
-        return $user->hasRole(['root', 'admin'])
-            && $user->hasPermissionTo('delete_any_extension::service');
+        return $user->hasPermissionTo('delete_any_extension::service');
     }
 
     /**
@@ -65,8 +59,7 @@ class ExtensionServicePolicy
      */
     public function restore(User $user, ExtensionService $extensionService): bool
     {
-        return $user->hasRole(['root', 'admin'])
-            && $user->hasPermissionTo('restore_extension::service');
+        return $user->hasPermissionTo('restore_extension::service');
     }
 
     /**
@@ -74,13 +67,11 @@ class ExtensionServicePolicy
      */
     public function forceDelete(User $user, ExtensionService $extensionService): bool
     {
-        return $user->hasRole(['root', 'admin'])
-            && $user->hasPermissionTo('force_delete_extension::service');
+        return $user->hasPermissionTo('force_delete_extension::service');
     }
 
     public function forceDeleteAny(User $user): bool
     {
-        return $user->hasRole(['root', 'admin'])
-            && $user->hasPermissionTo('force_delete_any_extension::service');
+        return $user->hasPermissionTo('force_delete_any_extension::service');
     }
 }

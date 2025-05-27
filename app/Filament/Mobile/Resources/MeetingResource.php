@@ -1,13 +1,12 @@
 <?php
 
-namespace App\Filament\Resources;
+namespace App\Filament\Mobile\Resources;
 
-use App\Filament\Resources\MeetingResource\Pages;
-use App\Filament\Resources\MeetingResource\RelationManagers;
+use App\Filament\Mobile\Resources\MeetingResource\Pages;
+use App\Filament\Mobile\Resources\MeetingResource\RelationManagers;
 use App\Models\Meeting;
 use Filament\Forms;
 use Filament\Forms\Form;
-use Filament\Forms\Components\DateTimePicker;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;

@@ -98,28 +98,37 @@ class ExtensionServiceController extends Controller
     }
 
 
-    public function allMeetings()
+    public function allMeetings(Request $request)
     {
-        $meetings = Meeting::query()
+        $validStatuses = ['upcoming', 'ongoing', 'completed', 'cancelled'];
+        $status = $request->query('status');
+
+        $query = Meeting::query()
             ->orderBy('date', 'asc')
-            ->orderBy('time', 'asc')
-            ->get()
-            ->map(function ($meeting) {
-                $date = Carbon::parse($meeting->date);
-                return [
-                    "id" => $meeting->id,
-                    "title" => $meeting->title,
-                    "venue" => $meeting->venue,
-                    "description" => $meeting->description,
-                    "presenter" => $meeting->presenter,
-                    "status" => $meeting->status,
-                    "date" => $date->format('l, F jS, Y'), // Example: Friday, April 4th, 2025
-                    "time" => Carbon::parse($meeting->time)->format('g:i A'), // Example: 2:00 AM
-                ];
-            });
+            ->orderBy('time', 'asc');
+
+        // Apply status filter if provided and valid
+        if ($status && in_array($status, $validStatuses)) {
+            $query->where('status', $status);
+        }
+
+        $meetings = $query->get()->map(function ($meeting) {
+            $date = Carbon::parse($meeting->date);
+            return [
+                "id" => $meeting->id,
+                "title" => $meeting->title,
+                "venue" => $meeting->venue,
+                "description" => $meeting->description,
+                "presenter" => $meeting->presenter,
+                "status" => $meeting->status,
+                "date" => $date->format('l, F jS, Y'),
+                "time" => Carbon::parse($meeting->time)->format('g:i A'),
+            ];
+        });
 
         return response()->json([
-            "meetings" => $meetings
+            "meetings" => $meetings,
+            "applied_filter" => $status ?: 'none'
         ]);
     }
 
@@ -157,6 +166,45 @@ class ExtensionServiceController extends Controller
         ]);
     }
 
+    /**
+     * Get authenticated user's tickets with meeting details
+     */
+    public function myBookings()
+    {
+        $user = auth()->user();
+
+        $bookings = $user->tickets()
+            ->with(['meeting' => function ($query) {
+                $query->select('id', 'title', 'date', 'time', 'venue', 'presenter', 'status');
+            }])
+            ->orderBy('created_at', 'desc')
+            ->get()
+            ->map(function ($ticket) {
+                $meeting = $ticket->meeting;
+                $date = Carbon::parse($meeting->date);
+
+                return [
+                    "ticket_id" => $ticket->id,
+                    "ticket_number" => $ticket->ticket_number,
+                    "price" => $ticket->price,
+                    "status" => $ticket->status,
+                    "created_at" => $ticket->created_at->format('Y-m-d H:i:s'),
+                    "meeting" => [
+                        "id" => $meeting->id,
+                        "title" => $meeting->title,
+                        "date" => $date->format('l, F jS, Y'),
+                        "time" => Carbon::parse($meeting->time)->format('g:i A'),
+                        "venue" => $meeting->venue,
+                        "presenter" => $meeting->presenter,
+                        "status" => $meeting->status,
+                    ]
+                ];
+            });
+
+        return response()->json([
+            "bookings" => $bookings
+        ]);
+    }
 
     /**
      * Update the specified resource in storage.

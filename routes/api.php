@@ -28,6 +28,7 @@ Route::prefix('v1')->group(function () {
         Route::get('/extension/services/meetings/all', [ExtensionServiceController::class, 'allMeetings']);
         Route::get('/extension/services/meetings/{id}', [ExtensionServiceController::class, 'showMeeting']);
         Route::post('/extension/services/tickets', [ExtensionServiceController::class, 'storeTicket']);
+        Route::get('/my-bookings', [ExtensionServiceController::class, 'myBookings'])->middleware('auth:sanctum');
         Route::post('/profile', [ProfileController::class, 'store']);
         Route::get('/profile', [ProfileController::class, 'index']);
         Route::get('/profile/{id}', [ProfileController::class, 'show']);

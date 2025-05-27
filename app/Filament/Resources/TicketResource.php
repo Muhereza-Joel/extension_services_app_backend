@@ -47,14 +47,14 @@ class TicketResource extends Resource
             ->columns([
                 Tables\Columns\TextColumn::make('ticket_number')
                     ->searchable(),
-                Tables\Columns\TextColumn::make('meeting_id')
+                Tables\Columns\TextColumn::make('meeting.title')
                     ->numeric()
                     ->sortable(),
                 Tables\Columns\TextColumn::make('price')
                     ->money()
                     ->sortable(),
                 Tables\Columns\TextColumn::make('status'),
-                Tables\Columns\TextColumn::make('attendee_id')
+                Tables\Columns\TextColumn::make('attendee.name')
                     ->numeric()
                     ->sortable(),
                 Tables\Columns\TextColumn::make('created_at')

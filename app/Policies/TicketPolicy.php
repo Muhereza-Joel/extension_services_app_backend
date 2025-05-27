@@ -13,8 +13,7 @@ class TicketPolicy
      */
     public function viewAny(User $user): bool
     {
-        return $user->hasRole(['root', 'admin', 'extension officer'])
-            && $user->hasPermissionTo('view_any_ticket');
+        return $user->hasPermissionTo('view_any_ticket');
     }
 
     /**
@@ -22,8 +21,7 @@ class TicketPolicy
      */
     public function view(User $user, Ticket $ticket): bool
     {
-        return $user->hasRole(['root', 'admin', 'extension officer'])
-            && $user->hasPermissionTo('view_ticket');
+        return $user->hasPermissionTo('view_ticket');
     }
 
     /**
@@ -31,7 +29,7 @@ class TicketPolicy
      */
     public function create(User $user): bool
     {
-        return false;
+        return $user->hasPermissionTo('create_ticket');
     }
 
     /**
@@ -39,7 +37,7 @@ class TicketPolicy
      */
     public function update(User $user, Ticket $ticket): bool
     {
-        return false;
+        return $user->hasPermissionTo('update_ticket');
     }
 
     /**
@@ -47,7 +45,7 @@ class TicketPolicy
      */
     public function delete(User $user, Ticket $ticket): bool
     {
-        return false;
+        return $user->hasPermissionTo('delete_ticket');
     }
 
     /**
@@ -55,7 +53,7 @@ class TicketPolicy
      */
     public function restore(User $user, Ticket $ticket): bool
     {
-        return false;
+        return $user->hasPermissionTo('restore_ticket');
     }
 
     /**
@@ -63,6 +61,6 @@ class TicketPolicy
      */
     public function forceDelete(User $user, Ticket $ticket): bool
     {
-        return false;
+        return $user->hasPermissionTo('force_delete_ticket');
     }
 }

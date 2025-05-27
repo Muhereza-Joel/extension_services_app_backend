@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use App\Models\User;
+use Laravel\Sanctum\PersonalAccessToken;
 use Spatie\Permission\Models\Role;
 
 class AuthController extends Controller
@@ -57,5 +58,20 @@ class AuthController extends Controller
         return response()->json([
             "roles" => Role::whereNotIn('name', ['root', 'admin'])->select('id', 'name')->get()
         ]);
+    }
+
+    public function mobileSession($token)
+    {
+        $accessToken = PersonalAccessToken::findToken($token);
+
+        if (!$accessToken) {
+            abort(403);
+        }
+
+        $user = $accessToken->tokenable;
+
+        Auth::login($user);
+
+        return redirect('/mobile-admin/dashboard');
     }
 }
