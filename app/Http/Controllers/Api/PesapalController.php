@@ -3,8 +3,12 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Models\Ticket;
 use GuzzleHttp\Client;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Log;
 
 class PesapalController extends Controller
 {
@@ -18,7 +22,7 @@ class PesapalController extends Controller
         ]);
         $this->baseUrl = env('PESAPAL_ENV') === 'sandbox'
             ? 'https://cybqa.pesapal.com/pesapalv3'
-            : 'https://pay.pesapal.com/v3';
+            : 'https://cybqa.pesapal.com/pesapalv3';
     }
 
     public function getAccessToken()
@@ -69,6 +73,7 @@ class PesapalController extends Controller
 
         $accessToken = $this->getAccessToken();
         $ipnId = $this->registerIPN();
+        $reference_number = 'xTendat-ticket' . mt_rand(10000000, 99999999) . uniqid();
 
         $response = $this->client->post("$this->baseUrl/api/Transactions/SubmitOrderRequest", [
             'headers' => [
@@ -76,7 +81,7 @@ class PesapalController extends Controller
                 'Content-Type' => 'application/json',
             ],
             'json' => [
-                'id' => uniqid(), // Unique order ID
+                'id' => $reference_number, // Unique order ID
                 'currency' => 'UGX',
                 // 'amount' => $request->amount,
                 'amount' => 500,
@@ -90,19 +95,54 @@ class PesapalController extends Controller
             ],
         ]);
 
+        //first update the ticket with order tracking id and reference number
+        $ticket = \App\Models\Ticket::findOrFail($request->ticket_id);
+        $ticket->order_tracking_id = json_decode($response->getBody(), true)['order_tracking_id'];
+        $ticket->reference_number = $reference_number;
+        $ticket->save();
+
         return response()->json(json_decode($response->getBody(), true));
     }
 
-    //     public function handleIPN(Request $request)
-    // {
-    //     $orderTrackingId = $request->input('OrderTrackingId');
-    //     $paymentStatus = $request->input('PaymentStatus');
 
-    //     // Update payment status in the database
-    //     Payment::where('order_tracking_id', $orderTrackingId)->update([
-    //         'status' => $paymentStatus,
-    //     ]);
+    public function handleIPN(string $OrderTrackingId)
+    {
+        try {
+            $accessToken = $this->getAccessToken();
+            $response = Http::withoutVerifying()
+                ->withHeaders([
+                    'Authorization' => 'Bearer ' . $accessToken,
+                    'Content-Type' => 'application/json',
+                ])
+                ->get("https://cybqa.pesapal.com/pesapalv3/api/Transactions/GetTransactionStatus?orderTrackingId={$OrderTrackingId}");
 
-    //     return response()->json(['message' => 'IPN received']);
-    // }
+            if ($response->successful()) {
+                $data = $response->json();
+                $status = $data['payment_status_description'] ?? 'Unknown';
+
+
+                if ($data) {
+                    // Only proceed if payment is COMPLETED
+                    if ($status === 'Completed') {
+                        DB::transaction(function () use ($data, $status, $OrderTrackingId) {
+                            $ticket = Ticket::where('reference_number', $data['merchant_reference'])->firstOrFail();
+
+                            $ticket->update([
+                                'status'         => 'paid',
+                            ]);
+                        });
+                    } else {
+                        // Optionally log or notify if payment is not completed
+                        Log::info("Payment status not completed: {$status}");
+                    }
+                } else {
+                    Log::warning("No data returned from PesaPal for tracking ID: {$OrderTrackingId}");
+                }
+            } else {
+                throw new \Exception('Failed to check payment status from PesaPal');
+            }
+        } catch (\Exception $e) {
+            Log::error('Error checking payment status', ['error' => $e->getMessage()]);
+        }
+    }
 }

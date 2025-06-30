@@ -16,6 +16,8 @@ class Ticket extends Model
         'price',
         'status',
         'attendee_id',
+        'order_tracking_id',
+        'reference_number'
     ];
 
     protected static function booted()
