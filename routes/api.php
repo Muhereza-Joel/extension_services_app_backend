@@ -36,10 +36,12 @@ Route::prefix('v1')->group(function () {
         Route::post('/logout', [AuthController::class, 'logout']);
 
         Route::post('/pesapal/create-payment', [PesapalController::class, 'createPayment']);
-        Route::get('/pesapal/callback', [PesapalController::class, 'handleIPN']);
 
         Route::post('/chats', [ChatController::class, 'createChat']);
         Route::get('/chats/{chatId}/messages', [ChatController::class, 'getMessages']);
         Route::post('/chats/{chatId}/messages', [ChatController::class, 'sendMessage']);
     });
 });
+
+
+Route::get('/pesapal/callback', [PesapalController::class, 'handleIPN']);
