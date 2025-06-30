@@ -25,21 +25,19 @@ class PesapalController extends Controller
             : 'https://cybqa.pesapal.com/pesapalv3';
     }
 
-    public function getAccessToken()
+    private function getAccessToken(): string
     {
-        $response = $this->client->post("$this->baseUrl/api/Auth/RequestToken", [
-            'headers' => [
-                'Accept' => 'application/json',
-                'Content-Type' => 'application/json',
-            ],
-            'json' => [
+        // https://cybqa.pesapal.com/pesapalv3/api/Auth/RequestToken
+        $response = Http::withoutVerifying()
+            ->post('https://cybqa.pesapal.com/pesapalv3/api/Auth/RequestToken', [
                 'consumer_key' => env('PESAPAL_CONSUMER_KEY'),
                 'consumer_secret' => env('PESAPAL_CONSUMER_SECRET'),
-            ],
-        ]);
+            ]);
 
-        return json_decode($response->getBody(), true)['token'];
+        return $response->json('token');
     }
+
+
 
     public function registerIPN()
     {
